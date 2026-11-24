@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141210"><meta name="description" content="Grill House: parrilla, cortes seleccionados, hamburguesas y sabores al fuego.">
+<title>Grill House | Parrilla & Fuego</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://images.unsplash.com"><link rel="preload" as="image" href="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1800&q=90">
+<link rel="stylesheet" href="css/styles.css">
+<script defer src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script defer src="js/app.js"></script>
+</head>
+<body class="grill">
+<a class="skip-link" href="#main">Saltar al contenido</a>
+<header class="header" id="top">
+ <a class="brand" href="#top"><span class="brand__icon">🔥</span><span><strong>GRILL HOUSE</strong><small>PARRILLA & FUEGO</small></span></a>
+ <div class="header__tools"><span class="status"><i></i> Cocina abierta</span><button class="header__icon" id="themeBtn" aria-label="Cambiar tema">◐</button><button class="header__icon header__menu" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button></div>
+ <nav class="nav" id="nav"><a href="#top">Inicio</a><a href="#menu">Carta</a><a href="#nosotros">Experiencia</a><a href="#reserva">Reservas</a><a href="#contacto">Contacto</a></nav>
+</header>
+<main id="main">
+<section class="hero">
+ <img class="hero__img" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1800&q=90" alt="Carne a la parrilla recién preparada" fetchpriority="high" width="1800" height="1100">
+ <div class="hero__overlay"></div><div class="hero__content">
+  <span class="hero__pill">🔥 SABOR A FUEGO LENTO</span><p class="eyebrow">PARRILLA · CORTES · MOMENTOS</p>
+  <h1>El fuego reúne.<br><em>El sabor conquista.</em></h1>
+  <p class="hero__lead">Cortes seleccionados, brasas encendidas y recetas hechas para compartir. Descubre nuestra carta y vive la experiencia Grill House.</p>
+  <div class="hero__actions"><a class="btn btn--fire" href="#menu">Explorar la carta <span>↗</span></a><a class="btn btn--outline" href="#reserva">Reservar mesa</a></div>
+  <div class="hero__foot"><span>LA PAZ · BOLIVIA</span><span class="hero__rule"></span><span>BUEN FUEGO. BUEN SABOR.</span></div>
+ </div><div class="hero__stamp"><b>GH</b><span>DESDE LAS BRASAS</span></div>
+</section>
+<section class="intro wrap" id="nosotros"><div><p class="eyebrow">MÁS QUE UNA PARRILLA</p><h2>El ritual está<br>en cada detalle.</h2></div><div class="intro__copy"><p>En Grill House celebramos el encuentro alrededor del fuego. Nuestra propuesta combina ingredientes seleccionados, preparación cuidadosa y un ambiente cálido para disfrutar sin prisa.</p><a class="link" href="#menu">Conoce nuestra carta <span>→</span></a></div></section>
+<section class="menu wrap" id="menu">
+ <div class="section-head"><div><p class="eyebrow">DE NUESTRA COCINA A TU MESA</p><h2>La carta</h2><p class="section-head__sub">Explora sabores, encuentra tu favorito y arma tu pedido.</p></div><span class="result-count" id="resultCount">Cargando carta…</span></div>
+ <div class="toolbar"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Buscar cortes, platos o bebidas…" autocomplete="off"></label><select id="sort" aria-label="Ordenar carta"><option value="featured">Recomendados</option><option value="low">Precio: menor a mayor</option><option value="high">Precio: mayor a menor</option><option value="az">Nombre A–Z</option></select></div>
+ <div class="filters" id="filters" aria-label="Categorías de la carta"></div><div class="cards" id="cards" aria-live="polite"><p class="loading">Encendiendo las brasas…</p></div>
+</section>
+<section class="special wrap"><div class="special__photo"><img src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1200&q=85" alt="Parrillada para compartir" loading="lazy" width="1200" height="900"></div><div class="special__copy"><p class="eyebrow">EL PLACER DE COMPARTIR</p><h2>Una mesa.<br>Grandes momentos.</h2><p>Arma tu selección para una comida especial, una reunión familiar o una salida con amigos. Consulta disponibilidad y coordina tu visita con nuestro equipo.</p><a class="btn btn--fire" href="#reserva">Quiero reservar <span>→</span></a></div></section>
+<section class="order wrap" id="pedido"><div class="section-head"><div><p class="eyebrow">TU EXPERIENCIA, A TU MANERA</p><h2>Tu pedido</h2></div><span class="result-count" id="cartCount">0 productos</span></div>
+ <div class="order__grid"><div class="order__form"><h3>Datos de contacto</h3><label class="field"><span>Nombre completo *</span><input id="name" maxlength="70" placeholder="Tu nombre" required></label><label class="field"><span>Teléfono *</span><input id="phone" inputmode="tel" maxlength="20" placeholder="Ej. 7XXXXXXXX" required></label><label class="field"><span>Tipo de solicitud</span><select id="requestType"><option value="Pedido para consultar">Pedido para consultar</option><option value="Pedido para recoger">Pedido para recoger</option><option value="Consulta de disponibilidad">Consulta de disponibilidad</option></select></label><label class="field"><span>Indicaciones adicionales</span><textarea id="note" rows="3" maxlength="250" placeholder="Preferencias o detalles (opcional)"></textarea></label><p class="hint">El pedido es una solicitud de consulta. El restaurante confirmará disponibilidad, precio final y condiciones.</p><button class="btn btn--fire btn--full" id="reviewOrder">Revisar solicitud <span>→</span></button></div>
+ <aside class="cart"><div class="cart__head"><h3>Resumen</h3><button id="clearCart" class="clear">Vaciar</button></div><div id="cartItems" class="cart__items"><p class="muted">Todavía no agregaste productos.</p></div><div class="cart__total"><span>Total estimado</span><strong id="total">Bs 0.00</strong></div><small class="hint">Precios referenciales en bolivianos (Bs).</small></aside></div>
+</section>
+<section class="booking wrap" id="reserva"><div class="booking__intro"><p class="eyebrow">NOS ENCANTARÍA RECIBIRTE</p><h2>Reserva tu mesa.</h2><p>Cuéntanos cuándo deseas visitarnos. El equipo confirmará la disponibilidad de acuerdo con el horario del restaurante.</p></div>
+ <form class="booking__form" id="bookingForm"><label class="field"><span>Nombre *</span><input id="bookingName" maxlength="70" required placeholder="Nombre de la reserva"></label><div class="booking__row"><label class="field"><span>Fecha *</span><input id="bookingDate" type="date" required></label><label class="field"><span>Hora preferida *</span><select id="bookingTime" required><option value="">Seleccionar</option><option>12:00</option><option>13:00</option><option>14:00</option><option>19:00</option><option>20:00</option><option>21:00</option></select></label></div><div class="booking__row"><label class="field"><span>Personas *</span><select id="guests"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label><label class="field"><span>Teléfono *</span><input id="bookingPhone" inputmode="tel" maxlength="20" required placeholder="Tu teléfono"></label></div><button class="btn btn--fire btn--full" type="submit">Solicitar reserva <span>→</span></button></form>
+</section>
+<section class="contact wrap" id="contacto"><div><p class="eyebrow">GRILL HOUSE · LA PAZ</p><h2>Nos vemos<br>junto al fuego.</h2><p>Actualiza estos datos con la información real del restaurante antes de publicarlo.</p></div><div class="contact__card"><span>🔥</span><h3>GRILL HOUSE</h3><p>La Paz, Bolivia</p><p>Horario referencial: martes a domingo</p><a class="btn btn--outline" href="mailto:contacto@grillhouse.bo?subject=Consulta%20Grill%20House">Enviar consulta ↗</a><small>Correo de demostración: reemplazar por el oficial.</small></div></section>
+</main>
+<footer class="footer"><a class="brand" href="#top"><span class="brand__icon">🔥</span><span><strong>GRILL HOUSE</strong><small>PARRILLA & FUEGO</small></span></a><p>© <span id="year"></span> Grill House. Catálogo demostrativo personalizable.</p><a href="#top">Volver arriba ↑</a></footer>
+<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal__shade" data-close></div><div class="modal__box"><button class="modal__x" data-close aria-label="Cerrar">×</button><p class="eyebrow">CONFIRMACIÓN</p><h2 id="modalTitle">Revisa tu solicitud</h2><p class="muted">Verifica los datos antes de continuar. Esta pantalla tiene un tiempo de revisión limitado.</p><div class="timer">Tiempo restante <strong id="timer">00:30</strong></div><div id="summary" class="summary"></div><div class="modal__actions"><button class="btn btn--outline" data-close>Volver</button><button class="btn btn--fire" id="confirm">Confirmar</button></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div><button class="log-toggle" id="logToggle" aria-expanded="false">Bitácora de eventos <b>＋</b></button><aside class="log" id="log" hidden><div><strong>Registro de eventos</strong><button id="clearLog">Limpiar</button></div><ol id="logList"><li>Aplicación iniciada.</li></ol></aside>
+</body></html>

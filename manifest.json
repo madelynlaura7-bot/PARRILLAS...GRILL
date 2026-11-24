@@ -1,0 +1,17 @@
+{
+  "name": "Grill House - Parrilla & Fuego",
+  "short_name": "Grill House",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#141210",
+  "theme_color": "#141210",
+  "description": "Catálogo y reservas de Grill House, parrilla & fuego.",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

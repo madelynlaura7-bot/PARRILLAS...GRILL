@@ -1,0 +1,55 @@
+(() => {
+ 'use strict';
+ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+ const state={items:[],category:'Todos',search:'',sort:'featured',cart:[],timer:null,seconds:30,toastTimer:null};
+ const money=n=>`Bs ${Number(n).toFixed(2)}`;
+ const escapeText=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const imageUrl=s=>/^https:\/\/images\.unsplash\.com\//.test(String(s||''))?s:'';
+ const store=(k,v)=>{try{localStorage.setItem('grill-'+k,JSON.stringify(v));}catch(e){console.warn('Almacenamiento no disponible',e);}};
+ const read=(k,d)=>{try{return JSON.parse(localStorage.getItem('grill-'+k))??d;}catch{return d;}};
+ state.cart=read('cart',[]);
+ function log(msg){const li=document.createElement('li');li.textContent=`${new Date().toLocaleTimeString()} · ${msg}`;$('#logList').prepend(li);while($('#logList').children.length>35)$('#logList').lastElementChild.remove();}
+ function toast(msg){const el=$('#toast');el.textContent=msg;if(window.jQuery){$(el).stop(true,true).fadeIn(150);clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>$(el).fadeOut(200),2800);}else{el.style.display='block';clearTimeout(state.toastTimer);state.toastTimer=setTimeout(()=>el.style.display='none',2800);}}
+ async function loadCatalog(){try{const res=await fetch('data/catalog.json');if(!res.ok)throw Error('Error HTTP');state.items=await res.json();renderFilters();renderCards();renderCart();log('Carta cargada mediante Fetch API.');}catch(err){$('#cards').textContent='No se pudo cargar la carta. Comprueba la conexión y vuelve a intentarlo.';log('Error de carga de catálogo.');}}
+ function renderFilters(){const cats=['Todos',...new Set(state.items.map(x=>x.category))];$('#filters').innerHTML=cats.map(c=>`<button type="button" class="filter ${c===state.category?'active':''}" data-cat="${escapeText(c)}">${escapeText(c)}</button>`).join('');}
+ function filtered(){let a=state.items.filter(p=>(state.category==='Todos'||p.category===state.category)&&`${p.name} ${p.description} ${p.category}`.toLowerCase().includes(state.search));if(state.sort==='low')a.sort((x,y)=>x.price-y.price);if(state.sort==='high')a.sort((x,y)=>y.price-x.price);if(state.sort==='az')a.sort((x,y)=>x.name.localeCompare(y.name,'es'));return a;}
+ function renderCards(){const items=filtered();$('#resultCount').textContent=`${items.length} platos`;if(!items.length){$('#cards').innerHTML='<div class="empty-state">No encontramos resultados. Prueba otra búsqueda.</div>';return;}
+  const markup=items.map(p=>`<article class="food-card"><div class="food-card__image"><img src="${escapeText(imageUrl(p.image))}" alt="${escapeText(p.name)}" loading="lazy" width="1000" height="750"><span class="food-card__badge">${escapeText(p.category)}</span></div><div class="food-card__body"><span class="food-card__meta">${escapeText(p.meta)}</span><h3 title="${escapeText(p.name)}">${escapeText(p.name)}</h3><p class="food-card__desc">${escapeText(p.description)}</p><button type="button" class="details" aria-expanded="false">Ver detalles +</button><div class="details-panel"><p>${escapeText(p.description)} · ${escapeText(p.meta)}</p></div><div class="food-card__bottom"><span class="price">${money(p.price)} <small>BOB</small></span><button type="button" class="add" data-add="${escapeText(p.id)}" aria-label="Añadir ${escapeText(p.name)}">+</button></div></div></article>`).join('');
+  $('#cards').innerHTML=window.DOMPurify?DOMPurify.sanitize(markup):markup;
+  $$('img[loading="lazy"]').forEach(img=>{if(img.decode)img.decode().catch(()=>{});});
+ }
+ function add(id){const p=state.items.find(x=>x.id===id);if(!p)return;const row=state.cart.find(x=>x.id===id);if(row)row.qty++;else state.cart.push({id,qty:1});store('cart',state.cart);renderCart();toast(`${p.name} agregado al pedido`);log(`Añadido al carrito: ${p.name}`);}
+ function change(id,n){const r=state.cart.find(x=>x.id===id);if(!r)return;r.qty+=n;if(r.qty<=0)state.cart=state.cart.filter(x=>x.id!==id);store('cart',state.cart);renderCart();}
+ function renderCart(){let total=0,count=0;const el=$('#cartItems');if(!state.cart.length)el.innerHTML='<p class="muted">Todavía no agregaste productos.</p>';else el.innerHTML=state.cart.map(r=>{const p=state.items.find(x=>x.id===r.id);if(!p)return'';total+=p.price*r.qty;count+=r.qty;return `<div class="cart-row"><div class="cart-row__name">${escapeText(p.name)}<small>${money(p.price)} · ${r.qty} unidad(es)</small></div><div class="qty"><button type="button" data-minus="${p.id}" aria-label="Quitar uno">−</button><span>${r.qty}</span><button type="button" data-plus="${p.id}" aria-label="Añadir uno">+</button></div></div>`;}).join('');$('#total').textContent=money(total);$('#cartCount').textContent=`${count} producto(s)`;}
+ function validPhone(v){return /^[+0-9 ()-]{7,20}$/.test(v);}
+ function openModal(){const name=$('#name').value.trim(),phone=$('#phone').value.trim();if(!name||!phone){toast('Completa nombre y teléfono.');(!name?$('#name'):$('#phone')).focus();return;}if(!validPhone(phone)){toast('Revisa el formato del teléfono.');$('#phone').focus();return;}if(!state.cart.length){toast('Agrega al menos un plato a tu pedido.');return;}const total=state.cart.reduce((s,r)=>s+(state.items.find(p=>p.id===r.id)?.price||0)*r.qty,0);$('#summary').textContent=`Cliente: ${name}. Teléfono: ${phone}. Tipo: ${$('#requestType').value}. Total estimado: ${money(total)}. Se guardará como solicitud local, sin procesar pagos.`;$('#modal').classList.add('open');$('#modal').setAttribute('aria-hidden','false');state.seconds=30;tick();clearInterval(state.timer);state.timer=setInterval(()=>{state.seconds--;tick();if(state.seconds<=0){closeModal();toast('Terminó el tiempo de revisión. Puedes intentarlo nuevamente.');}},1000);log('Abrió revisión del pedido.');}
+ function tick(){$('#timer').textContent=`00:${String(state.seconds).padStart(2,'0')}`;}
+ function closeModal(){clearInterval(state.timer);state.timer=null;$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true');}
+ function confirmOrder(){const total=state.cart.reduce((s,r)=>s+(state.items.find(p=>p.id===r.id)?.price||0)*r.qty,0);const req={type:'pedido',date:new Date().toISOString(),name:$('#name').value.trim(),phone:$('#phone').value.trim(),requestType:$('#requestType').value,items:state.cart,total,note:$('#note').value.trim()};const history=read('requests',[]);history.unshift(req);store('requests',history.slice(0,30));state.cart=[];store('cart',state.cart);renderCart();closeModal();toast('Solicitud guardada en este dispositivo. El restaurante debe confirmar.');log('Pedido guardado localmente.');}
+ function setup(){
+  $('#filters').addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(!b)return;state.category=b.dataset.cat;renderFilters();renderCards();log(`Categoría: ${state.category}`);});
+  $('#cards').addEventListener('click',e=>{const addBtn=e.target.closest('[data-add]');if(addBtn)add(addBtn.dataset.add);const detail=e.target.closest('.details');if(detail){const panel=detail.nextElementSibling,open=detail.getAttribute('aria-expanded')==='true';detail.setAttribute('aria-expanded',String(!open));detail.textContent=open?'Ver detalles +':'Ocultar detalles −';if(window.jQuery)$(panel).stop(true,true).slideToggle(180);else panel.hidden=!open;}});
+  $('#search').addEventListener('input',e=>{state.search=e.target.value.trim().toLowerCase();renderCards();});
+  $('#sort').addEventListener('change',e=>{state.sort=e.target.value;renderCards();log('Orden de carta actualizado.');});
+  $('#cartItems').addEventListener('click',e=>{const p=e.target.closest('[data-plus]'),m=e.target.closest('[data-minus]');if(p)change(p.dataset.plus,1);if(m)change(m.dataset.minus,-1);});
+  $('#clearCart').addEventListener('click',()=>{state.cart=[];store('cart',state.cart);renderCart();toast('Pedido vaciado.');});
+  $('#reviewOrder').addEventListener('click',openModal);$('#confirm').addEventListener('click',confirmOrder);
+  $('#modal').addEventListener('click',e=>{if(e.target.matches('[data-close]'))closeModal();});
+  $('#bookingDate').min=new Date().toISOString().slice(0,10);
+  $('#bookingForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#bookingName').value.trim(),phone=$('#bookingPhone').value.trim(),date=$('#bookingDate').value,time=$('#bookingTime').value;if(!name||!phone||!date||!time){toast('Completa los campos obligatorios.');return;}if(!validPhone(phone)){toast('Revisa el teléfono de contacto.');return;}const b={type:'reserva',name,phone,date,time,guests:$('#guests').value,dateCreated:new Date().toISOString()};const a=read('requests',[]);a.unshift(b);store('requests',a.slice(0,30));e.target.reset();$('#bookingDate').min=new Date().toISOString().slice(0,10);toast('Solicitud de reserva guardada. Espera la confirmación del restaurante.');log('Nueva solicitud de reserva registrada.');});
+  $('#themeBtn').addEventListener('click',()=>{document.body.classList.toggle('light');store('theme',document.body.classList.contains('light'));log('Tema visual actualizado.');});
+  if(read('theme',false))document.body.classList.add('light');
+  $('#menuBtn').addEventListener('click',()=>{const nav=$('#nav'),open=nav.classList.toggle('open');$('#menuBtn').setAttribute('aria-expanded',String(open));if(window.jQuery)$(nav).stop(true,true).hide().slideDown(180);});
+  $('#nav').addEventListener('click',e=>{if(e.target.closest('a')){$('#nav').classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false');}});
+  $('#logToggle').addEventListener('click',()=>{const panel=$('#log'),opening=panel.hidden;$('#logToggle').setAttribute('aria-expanded',String(opening));if(window.jQuery){if(opening){panel.hidden=false;$(panel).hide().fadeIn(160);}else $(panel).fadeOut(160,()=>panel.hidden=true);}else panel.hidden=!opening;});
+  $('#clearLog').addEventListener('click',()=>{$('#logList').replaceChildren();log('Bitácora reiniciada.');});
+  $('#year').textContent=new Date().getFullYear();
+  // Delegación controlada: se registra una sola vez para evitar listeners duplicados.
+  document.addEventListener('click',e=>{const el=e.target.closest('button,a');if(el){const label=(el.innerText||el.getAttribute('aria-label')||'control').trim().slice(0,60);log(`Interacción: ${label}`);}});
+  // Ejemplo de sanitización de contenido externo: DOMPurify si se incorpora HTML confiable en futuras ampliaciones.
+  const safeFragment=html=>window.DOMPurify?DOMPurify.sanitize(html):String(html).replace(/<[^>]*>/g,'');
+  window.grillHouse={safeFragment};
+ }
+ function registerSW(){if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').then(()=>log('Service Worker activo.')).catch(()=>log('Service Worker no disponible.')));}
+ document.addEventListener('DOMContentLoaded',()=>{setup();loadCatalog();registerSW();});
+})();
